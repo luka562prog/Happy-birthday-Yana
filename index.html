@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>С днем рождения!</title>
     <style>
-        /* Сброс отступов */
         * {
             margin: 0;
             padding: 0;
@@ -16,6 +15,7 @@
             width: 100%;
             min-height: 100vh;
             overflow-x: hidden;
+            overflow-y: auto;
             background: linear-gradient(135deg, #1a0000, #0a0000);
             font-family: 'Arial', sans-serif;
             display: flex;
@@ -47,8 +47,10 @@
             position: relative;
             width: 100%;
             height: auto;
-            max-width: 600px;
             aspect-ratio: 1/1;
+            max-width: 600px;
+            max-height: 600px;
+            touch-action: none;
         }
         
         canvas.active {
@@ -66,6 +68,7 @@
             border: none;
             padding: 0;
             touch-action: manipulation;
+            flex-shrink: 0;
         }
         
         #cakeButton:hover {
@@ -134,7 +137,7 @@
         
         .title {
             color: #ff0000;
-            font-size: clamp(28px, 8vw, 52px);
+            font-size: clamp(24px, 7vw, 52px);
             font-weight: bold;
             text-shadow: 0 0 30px rgba(255, 0, 0, 0.6);
             display: none;
@@ -143,6 +146,7 @@
             letter-spacing: 2px;
             text-align: center;
             padding: 0 10px;
+            width: 100%;
         }
         
         .title.active {
@@ -197,9 +201,9 @@
             opacity: 0;
             transition: opacity 2s ease;
             z-index: 10;
-            width: 90%;
+            width: 85%;
             max-width: 500px;
-            padding: 20px;
+            padding: 10px;
         }
 
         .text-overlay.visible {
@@ -207,16 +211,16 @@
         }
 
         .text-overlay .main-text {
-            font-size: clamp(18px, 4vw, 28px);
+            font-size: clamp(14px, 3.5vw, 28px);
             font-weight: bold;
             color: #fff;
             text-shadow: 0 0 30px rgba(255, 200, 200, 0.5), 0 0 60px rgba(255, 100, 100, 0.3);
             line-height: 1.6;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
 
         .text-overlay .sub-text {
-            font-size: clamp(14px, 3vw, 20px);
+            font-size: clamp(12px, 2.5vw, 20px);
             color: #ffd700;
             text-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
             animation: sparkle 2s ease-in-out infinite;
@@ -233,6 +237,8 @@
             display: inline-block;
             width: 100%;
             max-width: 600px;
+            max-height: 600px;
+            aspect-ratio: 1/1;
         }
 
         .fade-out {
@@ -278,23 +284,31 @@
             }
             
             .text-overlay .main-text {
-                font-size: 16px;
+                font-size: clamp(12px, 3vw, 16px);
                 line-height: 1.4;
             }
             
             canvas {
                 border-width: 1px;
             }
+            
+            .text-overlay {
+                width: 90%;
+            }
         }
 
         @media (max-width: 360px) {
             #cakeButton {
-                width: 120px;
-                height: 120px;
+                width: 110px;
+                height: 110px;
             }
             
             .text-overlay .main-text {
-                font-size: 14px;
+                font-size: 11px;
+            }
+            
+            .text-overlay .sub-text {
+                font-size: 10px;
             }
         }
     </style>
@@ -363,8 +377,10 @@
         const cakeLabel = document.querySelector('.cake-label');
         const textOverlay = document.getElementById('textOverlay');
 
-        const centerX = 300;
-        const centerY = 300;
+        // Размеры canvas (всегда 600x600 для логики)
+        const CANVAS_SIZE = 600;
+        const centerX = CANVAS_SIZE / 2;
+        const centerY = CANVAS_SIZE / 2;
         const scale = 15;
 
         let animationStarted = false;
@@ -422,13 +438,15 @@
 
         // Рисуем сердце с прогрессом и пульсацией
         function drawHeart(progress, pulseScale = 1, fadeAmount = 0) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Очищаем canvas
+            ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
 
+            // Градиентный фон
             const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 300);
             gradient.addColorStop(0, 'rgba(20, 0, 0, 1)');
             gradient.addColorStop(1, 'rgba(0, 0, 0, 1)');
             ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
 
             const allPoints = getHeartPoints();
             const totalPoints = allPoints.length;
@@ -438,7 +456,6 @@
             const redBase = 255;
             const greenBase = Math.floor(150 + 105 * (1 - Math.abs(pulseScale - 1) * 2));
             
-            // Плавное затухание цвета (уменьшаем насыщенность)
             const fadeFactor = 1 - fadeAmount * 0.6;
             const red = Math.floor(redBase * (0.4 + 0.6 * fadeFactor));
             const green = Math.floor(greenBase * (0.3 + 0.7 * fadeFactor));
@@ -446,6 +463,7 @@
 
             const color = `rgb(${red}, ${green}, ${blue})`;
 
+            // Рисуем 15 вложенных сердец
             for (let i = 1; i <= 15; i++) {
                 const currentScale = scale * i / 15 * pulseScale;
 
@@ -472,6 +490,7 @@
                 ctx.stroke();
             }
 
+            // Светящаяся точка в конце линии
             if (progress < 1 && pointsToDraw > 0) {
                 const smoothPos = allPoints[pointsToDraw - 1];
                 
@@ -487,13 +506,14 @@
                 }
             }
 
+            // Свечение
             if (progress >= 1) {
                 const glowGradient = ctx.createRadialGradient(centerX, centerY, 50, centerX, centerY, 250);
                 const glowIntensity = 0.05 * (1 + Math.abs(pulseScale - 1) * 2) * (1 - fadeAmount * 0.5);
                 glowGradient.addColorStop(0, `rgba(255, 0, 0, ${glowIntensity})`);
                 glowGradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
                 ctx.fillStyle = glowGradient;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
             }
         }
 
@@ -519,7 +539,7 @@
             fadeProgress = 0;
             textShown = false;
             
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
         }
 
         // Анимация
@@ -576,7 +596,7 @@
                     gradient.addColorStop(0, `rgba(255, 0, 0, ${glowIntensity * 0.3})`);
                     gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
                     ctx.fillStyle = gradient;
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
                 }
             }
 
@@ -623,8 +643,6 @@
         }
 
         cakeButton.addEventListener('click', startAnimation);
-        
-        // Обработка касаний для мобильных устройств
         cakeButton.addEventListener('touchstart', function(e) {
             e.preventDefault();
             startAnimation();
