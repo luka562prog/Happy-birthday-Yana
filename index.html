@@ -21,6 +21,7 @@
             flex-direction: column;
             align-items: center;
             gap: 30px;
+            position: relative;
         }
         
         canvas {
@@ -29,6 +30,7 @@
             border-radius: 10px;
             display: none;
             box-shadow: 0 0 50px rgba(255, 0, 0, 0.2);
+            position: relative;
         }
         
         canvas.active {
@@ -150,12 +152,91 @@
             text-shadow: 0 0 20px rgba(255, 200, 100, 0.3);
             opacity: 0.8;
             letter-spacing: 2px;
+            transition: opacity 0.5s ease;
         }
         
         @keyframes shake {
             0%, 100% { transform: rotate(0deg); }
             25% { transform: rotate(-5deg); }
             75% { transform: rotate(5deg); }
+        }
+
+        /* Контейнер для текста поверх canvas */
+        .text-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #fff;
+            font-family: 'Georgia', serif;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 2s ease;
+            z-index: 10;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .text-overlay.visible {
+            opacity: 1;
+        }
+
+        .text-overlay .main-text {
+            font-size: 28px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 30px rgba(255, 200, 200, 0.5), 0 0 60px rgba(255, 100, 100, 0.3);
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .text-overlay .sub-text {
+            font-size: 20px;
+            color: #ffd700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+            animation: sparkle 2s ease-in-out infinite;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 0.8; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); text-shadow: 0 0 40px rgba(255, 215, 0, 0.8); }
+        }
+
+        /* Контейнер для canvas с позиционированием */
+        .canvas-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .fade-out {
+            animation: fadeOut 1.5s ease forwards;
+        }
+
+        @keyframes fadeOut {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
     </style>
 </head>
@@ -200,7 +281,19 @@
             </button>
             <div class="cake-label">🎂 Нажми на тортик! 🎂</div>
         </div>
-        <canvas id="heartCanvas" width="600" height="600"></canvas>
+        
+        <div class="canvas-wrapper">
+            <canvas id="heartCanvas" width="600" height="600"></canvas>
+            <div class="text-overlay" id="textOverlay">
+                <div class="main-text">
+                    💖 Счастья, здоровья<br>
+                    и еще спасибо,<br>
+                    что появилась в моей жизни,<br>
+                    я тебя очень ценю и дорожу 💖
+                </div>
+                <div class="sub-text">✨ С любовью навсегда ✨</div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -209,6 +302,7 @@
         const cakeButton = document.getElementById('cakeButton');
         const title = document.getElementById('title');
         const cakeLabel = document.querySelector('.cake-label');
+        const textOverlay = document.getElementById('textOverlay');
 
         const centerX = 300;
         const centerY = 300;
@@ -218,6 +312,9 @@
         let animationId = null;
         let isPulsing = false;
         let pulseTime = 0;
+        let fadeStarted = false;
+        let fadeProgress = 0;
+        let textShown = false;
 
         // Функция сердца
         function corazon(n) {
@@ -265,10 +362,9 @@
         }
 
         // Рисуем сердце с прогрессом и пульсацией
-        function drawHeart(progress, pulseScale = 1) {
+        function drawHeart(progress, pulseScale = 1, fadeAmount = 0) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Добавляем свечение фона
             const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 300);
             gradient.addColorStop(0, 'rgba(20, 0, 0, 1)');
             gradient.addColorStop(1, 'rgba(0, 0, 0, 1)');
@@ -279,13 +375,20 @@
             const totalPoints = allPoints.length;
             const pointsToDraw = Math.floor(progress * totalPoints);
 
-            // Рисуем 15 вложенных сердец с пульсацией
+            // Вычисляем цвет с учётом затухания
+            const redBase = 255;
+            const greenBase = Math.floor(150 + 105 * (1 - Math.abs(pulseScale - 1) * 2));
+            
+            // Плавное затухание цвета (уменьшаем насыщенность)
+            const fadeFactor = 1 - fadeAmount * 0.6; // Максимум теряем 60% цвета
+            const red = Math.floor(redBase * (0.4 + 0.6 * fadeFactor));
+            const green = Math.floor(greenBase * (0.3 + 0.7 * fadeFactor));
+            const blue = Math.floor(greenBase * (0.3 + 0.7 * fadeFactor));
+
+            const color = `rgb(${red}, ${green}, ${blue})`;
+
             for (let i = 1; i <= 15; i++) {
                 const currentScale = scale * i / 15 * pulseScale;
-                
-                // Изменяем яркость в зависимости от пульсации
-                const brightness = Math.floor(150 + 105 * (1 - Math.abs(pulseScale - 1) * 2));
-                const color = `rgb(255, ${brightness}, ${brightness})`;
 
                 ctx.beginPath();
                 ctx.strokeStyle = color;
@@ -310,7 +413,6 @@
                 ctx.stroke();
             }
 
-            // Светящаяся точка в конце линии (только во время рисования)
             if (progress < 1 && pointsToDraw > 0) {
                 const smoothPos = allPoints[pointsToDraw - 1];
                 
@@ -326,20 +428,46 @@
                 }
             }
 
-            // Добавляем эффект свечения
             if (progress >= 1) {
                 const glowGradient = ctx.createRadialGradient(centerX, centerY, 50, centerX, centerY, 250);
-                glowGradient.addColorStop(0, `rgba(255, 0, 0, ${0.05 * (1 + Math.abs(pulseScale - 1) * 2)})`);
+                const glowIntensity = 0.05 * (1 + Math.abs(pulseScale - 1) * 2) * (1 - fadeAmount * 0.5);
+                glowGradient.addColorStop(0, `rgba(255, 0, 0, ${glowIntensity})`);
                 glowGradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
                 ctx.fillStyle = glowGradient;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
         }
 
+        // Сброс анимации
+        function resetAnimation() {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+
+            canvas.classList.remove('active');
+            canvas.style.display = 'none';
+            title.classList.remove('active');
+            textOverlay.classList.remove('visible');
+            
+            cakeButton.style.display = 'block';
+            cakeLabel.style.display = 'block';
+            
+            animationStarted = false;
+            isPulsing = false;
+            pulseTime = 0;
+            fadeStarted = false;
+            fadeProgress = 0;
+            textShown = false;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
         // Анимация
         let startTime = null;
-        const duration = 4000; // Время рисования
-        const pauseDuration = 500; // Пауза перед пульсацией
+        const duration = 4000;
+        const pauseDuration = 500;
+        const fadeStartTime = 15000; // Через 15 секунд начинаем затухание
 
         function animate(time) {
             if (startTime === null) {
@@ -348,42 +476,52 @@
 
             const elapsed = time - startTime;
             
-            // Если сердце еще не нарисовано полностью
+            // Проверяем, нужно ли начать затухание
+            if (elapsed > fadeStartTime && !fadeStarted) {
+                fadeStarted = true;
+                fadeProgress = 0;
+            }
+
+            // Обновляем прогресс затухания
+            if (fadeStarted && fadeProgress < 1) {
+                fadeProgress += 0.003; // Плавное затухание за ~5 секунд
+                if (fadeProgress > 1) fadeProgress = 1;
+            }
+
+            // Показываем текст когда сердце уже нарисовано и началось затухание
+            if (fadeStarted && !textShown && fadeProgress > 0.1) {
+                textShown = true;
+                textOverlay.classList.add('visible');
+            }
+
             if (!isPulsing) {
                 const drawTime = elapsed;
                 
                 if (drawTime < duration) {
-                    // Рисуем сердце
                     let progress = drawTime / duration;
                     progress = progress < 0.5 ? 
                         2 * progress * progress : 
                         1 - Math.pow(-2 * progress + 2, 2) / 2;
-                    drawHeart(progress, 1);
+                    drawHeart(progress, 1, 0);
                 } else if (drawTime < duration + pauseDuration) {
-                    // Пауза после рисования
-                    drawHeart(1, 1);
+                    drawHeart(1, 1, fadeProgress);
                 } else {
-                    // Начинаем пульсацию
                     isPulsing = true;
                     pulseTime = 0;
                 }
             } else {
-                // Пульсация
                 pulseTime += 0.02;
-                
-                // Пульсирующий масштаб: от 0.85 до 1.15
                 const pulseScale = 1 + 0.15 * Math.sin(pulseTime * 3);
+                drawHeart(1, pulseScale, fadeProgress);
                 
-                // Меняем цвет при пульсации
-                drawHeart(1, pulseScale);
-                
-                // Добавляем мерцание фона
-                const glowIntensity = 0.1 + 0.15 * Math.sin(pulseTime * 3);
-                const gradient = ctx.createRadialGradient(centerX, centerY, 50, centerX, centerY, 300);
-                gradient.addColorStop(0, `rgba(255, 0, 0, ${glowIntensity * 0.3})`);
-                gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
-                ctx.fillStyle = gradient;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                if (fadeProgress < 1) {
+                    const glowIntensity = (0.1 + 0.15 * Math.sin(pulseTime * 3)) * (1 - fadeProgress * 0.5);
+                    const gradient = ctx.createRadialGradient(centerX, centerY, 50, centerX, centerY, 300);
+                    gradient.addColorStop(0, `rgba(255, 0, 0, ${glowIntensity * 0.3})`);
+                    gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                }
             }
 
             animationId = requestAnimationFrame(animate);
@@ -399,8 +537,13 @@
                 startTime = null;
                 isPulsing = false;
                 pulseTime = 0;
+                fadeStarted = false;
+                fadeProgress = 0;
+                textShown = false;
+                textOverlay.classList.remove('visible');
             }
 
+            canvas.style.display = 'block';
             canvas.classList.add('active');
             title.classList.add('active');
             
@@ -413,6 +556,9 @@
             startTime = null;
             isPulsing = false;
             pulseTime = 0;
+            fadeStarted = false;
+            fadeProgress = 0;
+            textShown = false;
             
             if (animationId) {
                 cancelAnimationFrame(animationId);
