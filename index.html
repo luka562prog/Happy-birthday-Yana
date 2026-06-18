@@ -2,35 +2,53 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>С днем рождения!</title>
     <style>
-        body {
+        /* Сброс отступов */
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            width: 100%;
+            min-height: 100vh;
+            overflow-x: hidden;
+            background: linear-gradient(135deg, #1a0000, #0a0000);
+            font-family: 'Arial', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(135deg, #1a0000, #0a0000);
-            font-family: 'Arial', sans-serif;
-            overflow: hidden;
+        }
+        
+        body {
+            margin: 0;
+            padding: 10px;
         }
         
         .container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 30px;
+            gap: 20px;
+            width: 100%;
+            max-width: 620px;
+            margin: 0 auto;
             position: relative;
         }
         
         canvas {
-            display: block;
+            display: none;
             border: 2px solid #333;
             border-radius: 10px;
-            display: none;
             box-shadow: 0 0 50px rgba(255, 0, 0, 0.2);
             position: relative;
+            width: 100%;
+            height: auto;
+            max-width: 600px;
+            aspect-ratio: 1/1;
         }
         
         canvas.active {
@@ -40,13 +58,14 @@
         /* Кнопка-тортик */
         #cakeButton {
             position: relative;
-            width: 200px;
-            height: 200px;
+            width: 180px;
+            height: 180px;
             cursor: pointer;
             transition: transform 0.3s ease;
             background: none;
             border: none;
             padding: 0;
+            touch-action: manipulation;
         }
         
         #cakeButton:hover {
@@ -115,13 +134,15 @@
         
         .title {
             color: #ff0000;
-            font-size: 52px;
+            font-size: clamp(28px, 8vw, 52px);
             font-weight: bold;
             text-shadow: 0 0 30px rgba(255, 0, 0, 0.6);
             display: none;
             animation: glow 2s ease-in-out infinite;
             font-family: 'Georgia', serif;
-            letter-spacing: 3px;
+            letter-spacing: 2px;
+            text-align: center;
+            padding: 0 10px;
         }
         
         .title.active {
@@ -143,15 +164,17 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 20px;
+            gap: 15px;
+            width: 100%;
         }
         
         .cake-label {
             color: #ffcc88;
-            font-size: 18px;
+            font-size: clamp(14px, 3vw, 18px);
             text-shadow: 0 0 20px rgba(255, 200, 100, 0.3);
             opacity: 0.8;
             letter-spacing: 2px;
+            text-align: center;
             transition: opacity 0.5s ease;
         }
         
@@ -176,6 +199,7 @@
             z-index: 10;
             width: 90%;
             max-width: 500px;
+            padding: 20px;
         }
 
         .text-overlay.visible {
@@ -183,7 +207,7 @@
         }
 
         .text-overlay .main-text {
-            font-size: 28px;
+            font-size: clamp(18px, 4vw, 28px);
             font-weight: bold;
             color: #fff;
             text-shadow: 0 0 30px rgba(255, 200, 200, 0.5), 0 0 60px rgba(255, 100, 100, 0.3);
@@ -192,7 +216,7 @@
         }
 
         .text-overlay .sub-text {
-            font-size: 20px;
+            font-size: clamp(14px, 3vw, 20px);
             color: #ffd700;
             text-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
             animation: sparkle 2s ease-in-out infinite;
@@ -207,6 +231,8 @@
         .canvas-wrapper {
             position: relative;
             display: inline-block;
+            width: 100%;
+            max-width: 600px;
         }
 
         .fade-out {
@@ -236,6 +262,39 @@
             100% {
                 opacity: 1;
                 transform: scale(1);
+            }
+        }
+
+        /* Адаптация для маленьких экранов */
+        @media (max-width: 480px) {
+            #cakeButton {
+                width: 140px;
+                height: 140px;
+            }
+            
+            .container {
+                gap: 15px;
+                padding: 5px;
+            }
+            
+            .text-overlay .main-text {
+                font-size: 16px;
+                line-height: 1.4;
+            }
+            
+            canvas {
+                border-width: 1px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            #cakeButton {
+                width: 120px;
+                height: 120px;
+            }
+            
+            .text-overlay .main-text {
+                font-size: 14px;
             }
         }
     </style>
@@ -380,7 +439,7 @@
             const greenBase = Math.floor(150 + 105 * (1 - Math.abs(pulseScale - 1) * 2));
             
             // Плавное затухание цвета (уменьшаем насыщенность)
-            const fadeFactor = 1 - fadeAmount * 0.6; // Максимум теряем 60% цвета
+            const fadeFactor = 1 - fadeAmount * 0.6;
             const red = Math.floor(redBase * (0.4 + 0.6 * fadeFactor));
             const green = Math.floor(greenBase * (0.3 + 0.7 * fadeFactor));
             const blue = Math.floor(greenBase * (0.3 + 0.7 * fadeFactor));
@@ -467,7 +526,7 @@
         let startTime = null;
         const duration = 4000;
         const pauseDuration = 500;
-        const fadeStartTime = 15000; // Через 15 секунд начинаем затухание
+        const fadeStartTime = 15000;
 
         function animate(time) {
             if (startTime === null) {
@@ -476,19 +535,16 @@
 
             const elapsed = time - startTime;
             
-            // Проверяем, нужно ли начать затухание
             if (elapsed > fadeStartTime && !fadeStarted) {
                 fadeStarted = true;
                 fadeProgress = 0;
             }
 
-            // Обновляем прогресс затухания
             if (fadeStarted && fadeProgress < 1) {
-                fadeProgress += 0.003; // Плавное затухание за ~5 секунд
+                fadeProgress += 0.003;
                 if (fadeProgress > 1) fadeProgress = 1;
             }
 
-            // Показываем текст когда сердце уже нарисовано и началось затухание
             if (fadeStarted && !textShown && fadeProgress > 0.1) {
                 textShown = true;
                 textOverlay.classList.add('visible');
@@ -567,6 +623,12 @@
         }
 
         cakeButton.addEventListener('click', startAnimation);
+        
+        // Обработка касаний для мобильных устройств
+        cakeButton.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            startAnimation();
+        });
     </script>
 </body>
 </html>
