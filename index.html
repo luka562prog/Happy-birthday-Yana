@@ -57,7 +57,6 @@
             display: block;
         }
         
-        /* Кнопка-тортик */
         #cakeButton {
             position: relative;
             width: 180px;
@@ -104,7 +103,6 @@
             animation-delay: 0.4s;
         }
         
-        /* Конфетти */
         .confetti-container {
             position: fixed;
             top: 0;
@@ -182,7 +180,6 @@
             transition: opacity 0.5s ease;
         }
         
-        /* Контейнер для текста поверх canvas */
         .text-overlay {
             position: absolute;
             top: 50%;
@@ -193,11 +190,15 @@
             font-family: 'Georgia', serif;
             pointer-events: none;
             z-index: 10;
-            width: 90%;
-            max-width: 500px;
-            padding: 10px;
+            width: 92%;
+            max-width: 520px;
+            padding: 15px;
             opacity: 0;
             transition: opacity 0.5s ease;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 215, 0, 0.1);
         }
 
         .text-overlay.visible {
@@ -205,26 +206,28 @@
         }
 
         .text-overlay .main-text {
-            font-size: clamp(14px, 3.5vw, 28px);
+            font-size: clamp(13px, 3.2vw, 24px);
             font-weight: bold;
-            line-height: 1.8;
-            margin-bottom: 10px;
+            line-height: 1.9;
+            margin-bottom: 0;
             min-height: 50px;
             word-wrap: break-word;
-            /* Золотисто-белый текст с градиентом */
-            background: linear-gradient(135deg, #fff8e7, #ffd700, #fff8e7);
+            color: #fff8e7;
+            text-shadow: 
+                0 0 20px rgba(255, 215, 0, 0.3),
+                0 0 40px rgba(255, 215, 0, 0.1),
+                0 2px 4px rgba(0, 0, 0, 0.8);
+            background: linear-gradient(135deg, #fff8e7, #ffd700, #ffb347);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            text-shadow: none;
-            filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.3)) drop-shadow(0 0 40px rgba(255, 215, 0, 0.1));
+            filter: drop-shadow(0 0 30px rgba(255, 215, 0, 0.2)) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
         }
 
         .text-overlay .main-text .char {
             display: inline;
             opacity: 0;
-            animation: charAppear 0.3s ease forwards;
-            /* Наследуем градиент */
+            animation: charAppear 0.25s ease forwards;
             background: inherit;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -233,47 +236,42 @@
 
         .text-overlay .main-text .char.space {
             display: inline-block;
-            min-width: 0.3em;
+            min-width: 0.25em;
+        }
+
+        .text-overlay .main-text .char.heart {
+            animation: heartAppear 0.6s ease forwards;
+            display: inline-block;
+        }
+
+        @keyframes heartAppear {
+            0% {
+                opacity: 0;
+                transform: scale(0) rotate(-180deg);
+                filter: drop-shadow(0 0 0px rgba(255, 50, 50, 0));
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.8) rotate(180deg);
+                filter: drop-shadow(0 0 50px rgba(255, 50, 50, 0.8));
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) rotate(360deg);
+                filter: drop-shadow(0 0 30px rgba(255, 50, 50, 0.4));
+            }
         }
 
         @keyframes charAppear {
             0% {
                 opacity: 0;
-                transform: translateY(10px) scale(0.8);
+                transform: translateY(8px) scale(0.85);
                 filter: drop-shadow(0 0 0px rgba(255, 215, 0, 0));
             }
             100% {
                 opacity: 1;
                 transform: translateY(0) scale(1);
-                filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.3));
-            }
-        }
-
-        .text-overlay .sub-text {
-            font-size: clamp(12px, 2.5vw, 20px);
-            color: #ff6b6b;
-            text-shadow: 0 0 20px rgba(255, 100, 100, 0.4), 0 0 40px rgba(255, 50, 50, 0.2);
-            animation: sparkle 2s ease-in-out infinite;
-            opacity: 0;
-            transition: opacity 1s ease 2s;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
-
-        .text-overlay .sub-text.show {
-            opacity: 1;
-        }
-
-        @keyframes sparkle {
-            0%, 100% { 
-                opacity: 0.8; 
-                transform: scale(1);
-                text-shadow: 0 0 20px rgba(255, 100, 100, 0.4);
-            }
-            50% { 
-                opacity: 1; 
-                transform: scale(1.05);
-                text-shadow: 0 0 40px rgba(255, 100, 100, 0.8), 0 0 80px rgba(255, 50, 50, 0.4);
+                filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.2));
             }
         }
 
@@ -328,8 +326,8 @@
             }
             
             .text-overlay .main-text {
-                font-size: clamp(12px, 3vw, 16px);
-                line-height: 1.6;
+                font-size: clamp(11px, 2.8vw, 15px);
+                line-height: 1.7;
             }
             
             canvas {
@@ -337,7 +335,9 @@
             }
             
             .text-overlay {
-                width: 92%;
+                width: 94%;
+                padding: 10px;
+                border-radius: 15px;
             }
         }
 
@@ -348,11 +348,13 @@
             }
             
             .text-overlay .main-text {
-                font-size: 11px;
+                font-size: 10px;
+                line-height: 1.6;
             }
             
-            .text-overlay .sub-text {
-                font-size: 10px;
+            .text-overlay {
+                padding: 8px;
+                border-radius: 12px;
             }
         }
     </style>
@@ -403,7 +405,6 @@
             <canvas id="heartCanvas" width="600" height="600"></canvas>
             <div class="text-overlay" id="textOverlay">
                 <div class="main-text" id="mainText"></div>
-                <div class="sub-text" id="subText">✨ С любовью навсегда ✨</div>
             </div>
         </div>
     </div>
@@ -416,7 +417,6 @@
         const cakeLabel = document.querySelector('.cake-label');
         const textOverlay = document.getElementById('textOverlay');
         const mainText = document.getElementById('mainText');
-        const subText = document.getElementById('subText');
 
         const CANVAS_SIZE = 600;
         const centerX = CANVAS_SIZE / 2;
@@ -431,19 +431,15 @@
         let fadeProgress = 0;
         let textAnimationDone = false;
         let textAnimationTimer = null;
-        let charIndex = 0;
 
-        // Текст для печати по буквам (с эмодзи)
-        const fullText = '💖 Счастья, здоровья и еще спасибо, что появилась в моей жизни, я тебя очень ценю и дорожу 💖';
+        const fullText = 'спасибо что появилась в моей жизни, ты как будто заново меня научила радоваться и стала причиной моих искренних эмоций и я постараюсь всегда показывать как для меня это важно солнышко ❤️';
 
-        // Функция сердца
         function corazon(n) {
             const x = 16 * Math.pow(Math.sin(n), 3);
             const y = 13 * Math.cos(n) - 5 * Math.cos(2 * n) - 2 * Math.cos(3 * n) - Math.cos(4 * n);
             return { x, y };
         }
 
-        // Получаем все точки сердца
         function getHeartPoints() {
             const points = [];
             for (let n = 0; n <= 100; n += 2) {
@@ -454,7 +450,6 @@
             return points;
         }
 
-        // Создание конфетти
         function createConfetti() {
             const container = document.createElement('div');
             container.className = 'confetti-container';
@@ -481,36 +476,32 @@
             }, 4000);
         }
 
-        // Показ текста по буквам
         function showTextByLetters() {
             mainText.innerHTML = '';
-            charIndex = 0;
             
-            // Разбиваем текст на символы (включая эмодзи)
             const chars = Array.from(fullText);
             
-            // Создаём span для каждого символа
             chars.forEach((char, index) => {
                 const span = document.createElement('span');
                 span.className = 'char';
+                
                 if (char === ' ') {
                     span.classList.add('space');
                     span.innerHTML = '&nbsp;';
+                } else if (char === '❤️') {
+                    span.classList.add('heart');
+                    span.textContent = char;
                 } else {
                     span.textContent = char;
                 }
-                span.style.animationDelay = `${index * 0.07}s`;
+                
+                span.style.animationDelay = `${index * 0.04}s`;
                 mainText.appendChild(span);
             });
             
             textOverlay.classList.add('visible');
-            
-            setTimeout(() => {
-                subText.classList.add('show');
-            }, 2000 + chars.length * 0.07 * 1000);
         }
 
-        // Сброс анимации
         function resetAnimation() {
             if (animationId) {
                 cancelAnimationFrame(animationId);
@@ -525,7 +516,6 @@
             canvas.style.display = 'none';
             title.classList.remove('active');
             textOverlay.classList.remove('visible');
-            subText.classList.remove('show');
             mainText.innerHTML = '';
             
             cakeButton.style.display = 'block';
@@ -537,12 +527,10 @@
             fadeStarted = false;
             fadeProgress = 0;
             textAnimationDone = false;
-            charIndex = 0;
             
             ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
         }
 
-        // Рисуем сердце с прогрессом и пульсацией
         function drawHeart(progress, pulseScale = 1, fadeAmount = 0) {
             ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
 
@@ -617,7 +605,6 @@
             }
         }
 
-        // Анимация
         let startTime = null;
         const duration = 4000;
         const pauseDuration = 500;
@@ -638,7 +625,7 @@
                 showTextByLetters();
             }
             
-            const fadeStartTime = heartCompleteTime + textDelay + 3000;
+            const fadeStartTime = heartCompleteTime + textDelay + 8000;
             if (elapsed > fadeStartTime && !fadeStarted) {
                 fadeStarted = true;
                 fadeProgress = 0;
@@ -682,7 +669,6 @@
             animationId = requestAnimationFrame(animate);
         }
 
-        // Запуск анимации
         function startAnimation() {
             if (animationStarted) {
                 if (animationId) {
@@ -699,9 +685,7 @@
                 fadeStarted = false;
                 fadeProgress = 0;
                 textAnimationDone = false;
-                charIndex = 0;
                 textOverlay.classList.remove('visible');
-                subText.classList.remove('show');
                 mainText.innerHTML = '';
             }
 
@@ -721,7 +705,6 @@
             fadeStarted = false;
             fadeProgress = 0;
             textAnimationDone = false;
-            charIndex = 0;
             
             if (animationId) {
                 cancelAnimationFrame(animationId);
